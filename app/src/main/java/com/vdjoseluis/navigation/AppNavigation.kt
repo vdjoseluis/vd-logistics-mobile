@@ -1,18 +1,21 @@
 package com.vdjoseluis.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.vdjoseluis.SplashScreen
 import com.vdjoseluis.auth.LoginScreen
 import com.vdjoseluis.auth.RegisterScreen
+import com.vdjoseluis.data.models.UserViewModel
 import com.vdjoseluis.ui.ClienteScreen
 import com.vdjoseluis.ui.HomeScreen
 
 @Composable
 fun AppNavigation() {
     val navController = rememberNavController()
+    val userViewModel: UserViewModel = viewModel()
 
     NavHost(navController = navController, startDestination = "splashScreen") {
 
@@ -21,9 +24,10 @@ fun AppNavigation() {
         }
 
         composable("login") {
-            LoginScreen(onLoginSuccess = {
-                navController.navigate("home")
-            })
+            LoginScreen(
+                userViewModel = userViewModel,
+                onLoginSuccess = { navController.navigate("home") }
+            )
         }
 
         composable("register") {
@@ -33,7 +37,10 @@ fun AppNavigation() {
         }
 
         composable("home") {
-            HomeScreen(navController)
+            HomeScreen(
+                navController,
+                userViewModel = userViewModel
+            )
         }
 
         composable("clientes") {
