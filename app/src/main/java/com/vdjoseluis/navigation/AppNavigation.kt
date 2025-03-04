@@ -4,6 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.vdjoseluis.SplashScreen
 import com.vdjoseluis.auth.LoginScreen
 import com.vdjoseluis.auth.RegisterScreen
 import com.vdjoseluis.ui.ClienteScreen
@@ -13,7 +14,11 @@ import com.vdjoseluis.ui.HomeScreen
 fun AppNavigation() {
     val navController = rememberNavController()
 
-    NavHost(navController = navController, startDestination = "login") {
+    NavHost(navController = navController, startDestination = "splashScreen") {
+
+        composable("splashScreen") {
+            SplashScreen(navController= navController)
+        }
 
         composable("login") {
             LoginScreen(onLoginSuccess = {
