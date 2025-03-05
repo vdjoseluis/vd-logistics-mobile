@@ -16,7 +16,7 @@ data class User(
     val email: String = ""
 ) {
     val name: String
-        get() = firstName
+        get() = "$firstName $lastName"
 }
 
 
