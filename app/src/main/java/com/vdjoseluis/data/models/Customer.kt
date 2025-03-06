@@ -1,0 +1,11 @@
+package com.vdjoseluis.data.models
+
+data class Customer(
+    val id: String = "",
+    val firstName: String = "",
+    val lastName: String = "",
+    val address: String = "",
+    val addressAdditional: String = "",
+    val phone: String = "",
+    val email: String = ""
+)

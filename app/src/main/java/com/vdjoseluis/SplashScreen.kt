@@ -26,7 +26,7 @@ fun SplashScreen(navController: NavController) {
     // Animation
     LaunchedEffect(key1 = true) {
         scale.animateTo(
-            targetValue = 0.7f,
+            targetValue = 1.6f,
             // tween Animation
             animationSpec = tween(
                 durationMillis = 800,

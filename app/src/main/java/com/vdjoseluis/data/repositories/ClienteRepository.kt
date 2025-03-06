@@ -1,18 +1,18 @@
 package com.vdjoseluis.data.repositories
 
 import com.google.firebase.firestore.FirebaseFirestore
-import com.vdjoseluis.data.models.Cliente
+import com.vdjoseluis.data.models.Customer
 
 class ClienteRepository {
     private val db = FirebaseFirestore.getInstance()
 
-    fun addCliente(cliente: Cliente, onResult: (Boolean) -> Unit) {
-        db.collection("clientes").document(cliente.id).set(cliente).addOnCompleteListener { onResult(it.isSuccessful) }
+    fun addCliente(customer: Customer, onResult: (Boolean) -> Unit) {
+        db.collection("clientes").document(customer.id).set(customer).addOnCompleteListener { onResult(it.isSuccessful) }
     }
 
-    fun getClientes(onResult: (List<Cliente>) -> Unit) {
+    fun getClientes(onResult: (List<Customer>) -> Unit) {
         db.collection("clientes").get().addOnSuccessListener { result ->
-            onResult(result.mapNotNull { it.toObject(Cliente::class.java) })
+            onResult(result.mapNotNull { it.toObject(Customer::class.java) })
         }
     }
 

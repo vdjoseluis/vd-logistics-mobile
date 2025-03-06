@@ -1,7 +1,9 @@
 package com.vdjoseluis.navigation
 
 import androidx.compose.runtime.Composable
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -13,11 +15,24 @@ import com.vdjoseluis.ui.ClienteScreen
 import com.vdjoseluis.ui.HomeScreen
 
 @Composable
-fun AppNavigation() {
+fun AppNavigation(userViewModel: UserViewModel) {
     val navController = rememberNavController()
-    val userViewModel: UserViewModel = viewModel()
 
-    NavHost(navController = navController, startDestination = "splashScreen") {
+    val userData by userViewModel.userData.collectAsState()
+
+    LaunchedEffect(userData) {
+        if (userData != null) {
+            navController.navigate("home") {
+                popUpTo("login") { inclusive = true }
+            }
+        } else {
+            navController.navigate("splashScreen") {
+                popUpTo("home") { inclusive = true }
+            }
+        }
+    }
+
+    NavHost(navController = navController, startDestination = if (userData!=null) "home" else "splashScreen") {
 
         composable("splashScreen") {
             SplashScreen(navController= navController)
@@ -26,7 +41,7 @@ fun AppNavigation() {
         composable("login") {
             LoginScreen(
                 userViewModel = userViewModel,
-                onLoginSuccess = { navController.navigate("home") }
+                onLoginSuccess = { userViewModel.loadUserData() }
             )
         }
 
@@ -38,7 +53,6 @@ fun AppNavigation() {
 
         composable("home") {
             HomeScreen(
-                navController,
                 userViewModel = userViewModel
             )
         }
