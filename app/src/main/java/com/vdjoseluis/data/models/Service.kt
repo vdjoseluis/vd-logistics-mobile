@@ -11,5 +11,7 @@ data class Service(
     val refCustomer: DocumentReference? = null,
     val refOperator: DocumentReference? = null,
     val status: String = "",
-    val type: String = ""
+    val type: String = "",
+
+    var customerName: String = ""
 )

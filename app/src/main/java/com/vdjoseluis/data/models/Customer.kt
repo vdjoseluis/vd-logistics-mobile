@@ -8,4 +8,7 @@ data class Customer(
     val addressAdditional: String = "",
     val phone: String = "",
     val email: String = ""
-)
+) {
+    val name: String
+        get() = "$firstName $lastName"
+}

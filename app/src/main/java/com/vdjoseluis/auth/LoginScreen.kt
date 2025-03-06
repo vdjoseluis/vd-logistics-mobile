@@ -8,10 +8,16 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextFieldColors
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -19,6 +25,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.ImeAction
@@ -33,14 +40,25 @@ import com.vdjoseluis.data.models.UserViewModel
 fun LoginScreen(
     onLoginSuccess: () -> Unit,
     viewModel: AuthViewModel = viewModel(),
-    userViewModel: UserViewModel
+    userViewModel: UserViewModel,
+    toggleTheme: () -> Unit,
+    isDarkTheme: Boolean
 ) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     val context = LocalContext.current
-
+    IconButton(onClick = { toggleTheme() }) {
+        Icon(
+            painter = painterResource(if (isDarkTheme) R.drawable.light_mode else R.drawable.dark_mode),
+            modifier = Modifier.size(30.dp),
+            contentDescription = "Cambiar modo claro/oscuro"
+        )
+    }
     Column(
-        modifier = Modifier.fillMaxSize().padding(horizontal = 16.dp).padding(top = 100.dp),
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(horizontal = 16.dp)
+            .padding(top = 100.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Image(
@@ -69,6 +87,7 @@ fun LoginScreen(
                 imeAction = ImeAction.Done
             ),
             modifier = Modifier.fillMaxWidth()
+
         )
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -82,8 +101,12 @@ fun LoginScreen(
                     Toast.makeText(context, "Error de autenticación", Toast.LENGTH_SHORT).show()
                 }
             }
-        }) {
-            Text("Iniciar Sesión")
+        }, modifier = Modifier.fillMaxWidth()) {
+            Text(
+                "Iniciar Sesión",
+                style = MaterialTheme.typography.titleMedium,
+                color = Color.White
+            )
         }
     }
 }
