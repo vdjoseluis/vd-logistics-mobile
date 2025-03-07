@@ -22,6 +22,7 @@ import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -84,7 +85,7 @@ fun HomeScreen(
                                 style = MaterialTheme.typography.titleMedium,
                             )
                         } else {
-                            Text(text = "Cargando datos...")
+                            CircularProgressIndicator()
                         }
 
                         IconButton(onClick = {
@@ -96,7 +97,7 @@ fun HomeScreen(
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primary,
+                    containerColor = MaterialTheme.colorScheme.primaryContainer,
                     titleContentColor = Color.White
                 )
             )
@@ -104,7 +105,7 @@ fun HomeScreen(
         bottomBar = {
             BottomAppBar(
                 modifier = Modifier.height(40.dp),
-                containerColor = MaterialTheme.colorScheme.primary,
+                containerColor = MaterialTheme.colorScheme.primaryContainer,
                 contentColor = Color.White
             ) {
                 Row(
@@ -119,6 +120,7 @@ fun HomeScreen(
                     IconButton(onClick = { toggleTheme() }) {
                         Icon(
                             painter = painterResource(if (isDarkTheme) R.drawable.light_mode else R.drawable.dark_mode),
+                            tint = if (isDarkTheme) Color.Yellow else Color.White,
                             modifier = Modifier.size(30.dp),
                             contentDescription = "Cambiar modo claro/oscuro"
                         )
@@ -174,6 +176,7 @@ fun HomeScreen(
                             color = MaterialTheme.colorScheme.tertiary,
                             modifier = Modifier
                                 .fillMaxWidth()
+                                .padding(vertical = 4.dp)
                         ) {
                             Text(
                                 text = "Servicios Por Confirmar",

@@ -11,6 +11,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonColors
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -28,6 +30,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -51,7 +54,8 @@ fun LoginScreen(
         Icon(
             painter = painterResource(if (isDarkTheme) R.drawable.light_mode else R.drawable.dark_mode),
             modifier = Modifier.size(30.dp),
-            contentDescription = "Cambiar modo claro/oscuro"
+            contentDescription = "Cambiar modo claro/oscuro",
+            tint = if (isDarkTheme) Color.Yellow else Color.Black
         )
     }
     Column(
@@ -101,11 +105,14 @@ fun LoginScreen(
                     Toast.makeText(context, "Error de autenticación", Toast.LENGTH_SHORT).show()
                 }
             }
-        }, modifier = Modifier.fillMaxWidth()) {
+        }, modifier = Modifier.fillMaxWidth(), colors = ButtonDefaults.buttonColors(
+            containerColor = MaterialTheme.colorScheme.primaryContainer,
+            contentColor = Color.White
+        ))
+        {
             Text(
                 "Iniciar Sesión",
                 style = MaterialTheme.typography.titleMedium,
-                color = Color.White
             )
         }
     }
