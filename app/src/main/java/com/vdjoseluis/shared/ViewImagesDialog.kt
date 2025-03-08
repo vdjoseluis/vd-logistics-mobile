@@ -13,7 +13,6 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -28,11 +27,11 @@ import coil.compose.AsyncImage
 fun ViewImagesDialog(serviceId: String, onDismiss: () -> Unit) {
     var imageUrls by remember { mutableStateOf<List<String>>(emptyList()) }
 
-    LaunchedEffect(serviceId) {
-        fetchImagesFromFirebaseStorage(serviceId) { urls ->
-            imageUrls = urls
-        }
-    }
+//    LaunchedEffect(serviceId) {
+//        fetchImagesFromFirebaseStorage(serviceId) { urls ->
+//            imageUrls = urls
+//        }
+//    }
 
     AlertDialog(
         onDismissRequest = onDismiss,

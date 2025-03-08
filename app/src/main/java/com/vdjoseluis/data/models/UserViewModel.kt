@@ -116,13 +116,30 @@ class UserViewModel : ViewModel() {
     fun updateServiceStatus(serviceId: String, newStatus: String, proposedDate: Date?, endServiceComments: String?) {
         viewModelScope.launch {
             try {
+                var action = "Finaliza servicio"
                 val updates = hashMapOf<String, Any>("status" to newStatus)
-                proposedDate?.let {updates["proposedDate"] = it }
+
+                proposedDate?.let {
+                    updates["proposedDate"] = it
+                    action = "Propone nueva fecha"
+                }
+                if (newStatus=="Confirmado") action = "Confirma cita servicio"
 
                 endServiceComments?.let {
                     updates["comments"] = it
                 }
+
+                val log = hashMapOf(
+                    "refService" to db.document("services/$serviceId"),
+                    "refOperator" to FirebaseAuth.getInstance().currentUser?.uid.let { uid ->
+                        FirebaseFirestore.getInstance().document("users/$uid")
+                    },
+                    "action" to action,
+                    "date" to Timestamp.now()
+                )
+
                 db.collection("services").document(serviceId).update(updates).await()
+                db.collection("logs").add(log).await()
 
                 Log.d("UserViewModel", "Estado actualizado: $newStatus")
             } catch (e: Exception) {
@@ -142,8 +159,13 @@ class UserViewModel : ViewModel() {
                     "description" to description,
                     "date" to Timestamp.now()
                 )
+                val log = incident.toMutableMap().apply {
+                    remove("description")
+                    put("action", "Reporta incidencia")
+                }
 
                 db.collection("incidents").add(incident).await()
+                db.collection("logs").add(log).await()
 
                 updateServiceStatus(serviceId, "Incidencia", null, null)
 

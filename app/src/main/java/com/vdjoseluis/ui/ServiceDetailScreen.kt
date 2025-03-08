@@ -60,6 +60,7 @@ import com.vdjoseluis.navigation.openDialer
 import com.vdjoseluis.navigation.openGoogleMaps
 import com.vdjoseluis.shared.CustomButton
 import com.vdjoseluis.shared.UploadImageDialog
+import com.vdjoseluis.shared.ViewFilesDialog
 import com.vdjoseluis.shared.ViewImagesDialog
 import com.vdjoseluis.shared.formatDate
 import com.vdjoseluis.shared.formatTime
@@ -89,7 +90,7 @@ fun ServiceDetailScreen(
     var showIncidentDialog by remember { mutableStateOf(false) }
     var showServiceCommentsDialog by remember { mutableStateOf(false) }
     var showUploadDialog by remember { mutableStateOf(false) }
-    var showViewImagesDialog by remember { mutableStateOf(false) }
+    var showViewFilesDialog by remember { mutableStateOf(false) }
 
     var showDateTimePickerDialog by remember { mutableStateOf(false) }
     var proposedDate by remember { mutableStateOf<Date?>(null) }
@@ -166,7 +167,6 @@ fun ServiceDetailScreen(
                                     DropdownMenuItem(
                                         text = { Text("Añadir imágenes") },
                                         onClick = {
-                                            //actionToConfirm = "imagen"
                                             showUploadDialog = true
                                             showMenu = false
                                         }
@@ -317,8 +317,8 @@ fun ServiceDetailScreen(
                         Card(
                             modifier = Modifier
                                 .padding(horizontal = 4.dp)
-                                .clickable { showViewImagesDialog = true }
-                        ) { RowData("Archivos adjuntos", "") } //TODO: ver recursos
+                                .clickable { showViewFilesDialog = true }
+                        ) { RowData("Archivos adjuntos", "") }
                     }
                 } else {
                     Text("No se pudo cargar el servicio o cliente.", color = Color.Red)
@@ -529,8 +529,8 @@ fun ServiceDetailScreen(
     if (showUploadDialog) {
         UploadImageDialog(serviceId, onDismiss = { showUploadDialog = false })
     }
-    if (showViewImagesDialog) {
-        ViewImagesDialog(serviceId, onDismiss = { showViewImagesDialog = false })
+    if (showViewFilesDialog) {
+        ViewFilesDialog(serviceId, onDismiss = { showViewFilesDialog = false }, context)
     }
 }
 
