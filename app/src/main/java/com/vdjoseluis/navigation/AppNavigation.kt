@@ -82,7 +82,13 @@ fun AppNavigation(
                 serviceId,
                 toggleTheme = toggleTheme,
                 isDarkTheme = isDarkTheme,
-                onBack = { navController.navigate("home")}
+                onBack = { navController.navigate("home")},
+                onUpdateStatus = { newStatus, proposedDate, endServiceComments ->
+                    userViewModel.updateServiceStatus(serviceId, newStatus, proposedDate, endServiceComments)
+                },
+                onReportIncident = { description ->
+                    userViewModel.reportIncident(serviceId, description)
+                }
             )
         }
     }

@@ -34,8 +34,11 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -46,6 +49,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.google.firebase.auth.FirebaseAuth
 import com.vdjoseluis.R
 import com.vdjoseluis.data.models.Service
@@ -167,6 +171,11 @@ fun HomeScreen(
                             )
                         }
                     }
+                    if (confirmedServices.isEmpty()) {
+                        item {
+                            Text("No tienes ningún servicio", modifier = Modifier.padding(vertical = 10.dp))
+                        }
+                    }
                     items(confirmedServices) { service ->
                         ServiceItem(service, onClick = { onServiceClick(service) })
                     }
@@ -187,6 +196,12 @@ fun HomeScreen(
                                 modifier = Modifier.padding(vertical = 5.dp, horizontal = 5.dp),
                                 color = Color.White,
                             )
+                        }
+                    }
+
+                    if (pendingServices.isEmpty()) {
+                        item {
+                            Text("No tienes ningún servicio", modifier = Modifier.padding(vertical = 10.dp))
                         }
                     }
                     items(pendingServices) { service ->
@@ -243,7 +258,7 @@ fun ServiceItem(service: Service, onClick: (Service) -> Unit) {
                 }
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
-                    "Cliente: ${service.customerName}",
+                    "${service.type}: ${service.customerName}",
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold
                 )

@@ -3,6 +3,7 @@ package com.vdjoseluis.data.models
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ListenerRegistration
@@ -11,6 +12,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
+import java.util.Date
 
 data class User(
     val firstName: String = "",
@@ -111,7 +113,46 @@ class UserViewModel : ViewModel() {
                 }
             }
     }
+    fun updateServiceStatus(serviceId: String, newStatus: String, proposedDate: Date?, endServiceComments: String?) {
+        viewModelScope.launch {
+            try {
+                val updates = hashMapOf<String, Any>("status" to newStatus)
+                proposedDate?.let {updates["proposedDate"] = it }
 
+                endServiceComments?.let {
+                    updates["comments"] = it
+                }
+                db.collection("services").document(serviceId).update(updates).await()
+
+                Log.d("UserViewModel", "Estado actualizado: $newStatus")
+            } catch (e: Exception) {
+                Log.e("UserViewModel", "Error al actualizar estado: ${e.message}", e)
+            }
+        }
+    }
+
+    fun reportIncident(serviceId: String, description: String) {
+        viewModelScope.launch {
+            try {
+                val incident = hashMapOf(
+                    "refService" to db.document("services/$serviceId"),
+                    "refOperator" to FirebaseAuth.getInstance().currentUser?.uid.let { uid ->
+                        FirebaseFirestore.getInstance().document("users/$uid")
+                    },
+                    "description" to description,
+                    "date" to Timestamp.now()
+                )
+
+                db.collection("incidents").add(incident).await()
+
+                updateServiceStatus(serviceId, "Incidencia", null, null)
+
+                Log.d("UserViewModel", "Incidencia registrada correctamente")
+            } catch (e: Exception) {
+                Log.e("UserViewModel", "Error al registrar incidencia: ${e.message}", e)
+            }
+        }
+    }
 
     fun clearUserData() {
         _userData.value = null
