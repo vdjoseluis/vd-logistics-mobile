@@ -45,7 +45,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -74,7 +74,6 @@ import com.vdjoseluis.shared.ViewFilesDialog
 import com.vdjoseluis.shared.formatDate
 import com.vdjoseluis.shared.formatTime
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.tasks.await
 import java.util.Calendar
 import java.util.Date
 
@@ -112,27 +111,41 @@ fun ServiceDetailScreen(
     val scope = rememberCoroutineScope()
     var selectedItem by remember { mutableStateOf("") }
 
-    LaunchedEffect(serviceId) {
-        try {
-            val serviceSnapshot = db.collection("services").document(serviceId).get().await()
-            val fetchedService = serviceSnapshot.toObject(Service::class.java)
-            if (fetchedService != null) {
+    DisposableEffect(serviceId) {
+        val serviceRef = db.collection("services").document(serviceId)
+
+        val listener = serviceRef.addSnapshotListener { serviceSnapshot, error ->
+            if (error != null) {
+                Log.e("ServiceDetail", "Error al escuchar el servicio", error)
+                isLoading = false
+                return@addSnapshotListener
+            }
+
+            if (serviceSnapshot != null && serviceSnapshot.exists()) {
+                val fetchedService = serviceSnapshot.toObject(Service::class.java)
                 service = fetchedService
 
-                fetchedService.refCustomer!!.get().addOnSuccessListener { customerSnapshot ->
-                    customer = customerSnapshot.toObject(Customer::class.java)
-                    isLoading = false
-                }.addOnFailureListener {
+                fetchedService?.refCustomer?.addSnapshotListener { customerSnapshot, customerError ->
+                    if (customerError != null) {
+                        Log.e("ServiceDetail", "Error al escuchar el cliente", customerError)
+                        isLoading = false
+                        return@addSnapshotListener
+                    }
+
+                    if (customerSnapshot != null && customerSnapshot.exists()) {
+                        customer = customerSnapshot.toObject(Customer::class.java)
+                    }
+
                     isLoading = false
                 }
             } else {
                 isLoading = false
             }
-        } catch (e: Exception) {
-            isLoading = false
-            Log.e("ServiceDetail", "Error al cargar el servicio", e)
         }
+
+        onDispose { listener.remove() }
     }
+
 
     ModalNavigationDrawer(
         drawerState = drawerState,
@@ -547,7 +560,6 @@ fun DrawerContent(status: String, onSelect: (String) -> Unit) {
                         onSelect(label)
                     })
             }
-
         }
     }
 }

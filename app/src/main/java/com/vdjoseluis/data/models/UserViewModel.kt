@@ -113,6 +113,7 @@ class UserViewModel : ViewModel() {
                 }
             }
     }
+
     fun updateServiceStatus(serviceId: String, newStatus: String, proposedDate: Date?, endServiceComments: String?) {
         viewModelScope.launch {
             try {

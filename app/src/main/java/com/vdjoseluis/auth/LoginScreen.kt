@@ -9,17 +9,16 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextFieldColors
-import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -30,7 +29,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -50,19 +48,28 @@ fun LoginScreen(
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     val context = LocalContext.current
-    IconButton(onClick = { toggleTheme() }) {
-        Icon(
-            painter = painterResource(if (isDarkTheme) R.drawable.light_mode else R.drawable.dark_mode),
-            modifier = Modifier.size(30.dp),
-            contentDescription = "Cambiar modo claro/oscuro",
-            tint = if (isDarkTheme) Color.Yellow else Color.Black
-        )
+
+    Surface (
+        modifier = Modifier.size(50.dp),
+        shadowElevation = 8.dp,
+        shape = CircleShape,
+        color = if (isDarkTheme) Color.Transparent else Color.Black
+    ){
+        IconButton(onClick = { toggleTheme() }) {
+            Icon(
+                painter = painterResource(if (isDarkTheme) R.drawable.light_mode else R.drawable.dark_mode),
+                modifier = Modifier.size(30.dp),
+                contentDescription = "Cambiar modo claro/oscuro",
+                tint = if (isDarkTheme) Color.Yellow else Color.White
+            )
+        }
     }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
             .padding(horizontal = 16.dp)
-            .padding(top = 100.dp),
+            .padding(top = 80.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Image(
@@ -100,7 +107,7 @@ fun LoginScreen(
             viewModel.login(email, password) { success ->
                 if (success) {
                     userViewModel.loadUserData()
-                    Toast.makeText(context, "Bienvenid@", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, "Inicio de sesión correcto", Toast.LENGTH_SHORT).show()
                 } else {
                     Toast.makeText(context, "Error de autenticación", Toast.LENGTH_SHORT).show()
                 }
