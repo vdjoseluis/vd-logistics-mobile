@@ -12,23 +12,23 @@ import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.vdjoseluis.R
 
 @Composable
-fun CustomButton (description: String, onClick: ()-> Unit){
+fun CustomButton (description: String, isDarkTheme: Boolean, onClick: ()-> Unit){
     val bgColor: Color
+    val contentColor: Color
     val icon: ImageVector
 
     if (description=="Call") {
         bgColor= Color.Green
+        contentColor = Color.White
         icon = Icons.Default.Call
     } else {
-        bgColor= MaterialTheme.colorScheme.primaryContainer
+        bgColor= if (isDarkTheme) Color.LightGray else MaterialTheme.colorScheme.primaryContainer
+        contentColor = if (isDarkTheme) MaterialTheme.colorScheme.primaryContainer else Color.White
         icon= Icons.Default.LocationOn
     }
     Surface (
@@ -41,7 +41,7 @@ fun CustomButton (description: String, onClick: ()-> Unit){
             Icon(
                 icon,
                 contentDescription = "$description button",
-                tint = Color.White,
+                tint = contentColor,
                 modifier = Modifier.size(36.dp)
             )
         }

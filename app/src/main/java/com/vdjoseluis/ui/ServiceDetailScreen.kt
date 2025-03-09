@@ -23,8 +23,8 @@ import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -37,11 +37,13 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -61,9 +63,9 @@ import com.vdjoseluis.navigation.openGoogleMaps
 import com.vdjoseluis.shared.CustomButton
 import com.vdjoseluis.shared.UploadImageDialog
 import com.vdjoseluis.shared.ViewFilesDialog
-import com.vdjoseluis.shared.ViewImagesDialog
 import com.vdjoseluis.shared.formatDate
 import com.vdjoseluis.shared.formatTime
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import java.util.Calendar
 import java.util.Date
@@ -99,6 +101,9 @@ fun ServiceDetailScreen(
     var incidentDescription by remember { mutableStateOf("") }
     var endServiceComments by remember { mutableStateOf("") }
 
+    var drawerState = rememberDrawerState(DrawerValue.Closed)
+    val scope = rememberCoroutineScope()
+
     LaunchedEffect(serviceId) {
         try {
             val serviceSnapshot = db.collection("services").document(serviceId).get().await()
@@ -121,7 +126,6 @@ fun ServiceDetailScreen(
         }
     }
 
-
     Scaffold(
         topBar = {
             TopAppBar(
@@ -138,7 +142,7 @@ fun ServiceDetailScreen(
                     actionIconContentColor = Color.White
                 ),
                 actions = {
-                    IconButton(onClick = { showMenu = true }) {
+                    IconButton(onClick = { /*showMenu = true*/ scope.launch { drawerState.open() } }) {
                         Icon(Icons.Default.MoreVert, contentDescription = "Opciones")
                     }
                     if (service != null) {
@@ -267,44 +271,24 @@ fun ServiceDetailScreen(
                         }
                         Spacer(modifier = Modifier.height(6.dp))
                         RowData("Nombre: ", customer!!.name)
-                        RowData("Email: ", customer!!.email)
                         RowData("Teléfono: ", customer!!.phone)
                         RowData("Dirección: ", customer!!.address)
                         RowData("Adicional: ", customer!!.addressAdditional)
                         Spacer(modifier = Modifier.height(15.dp))
 
-                        Card(
+                        Row(
                             modifier = Modifier
-                                .padding(horizontal = 50.dp)
-                                .align(Alignment.CenterHorizontally),
-                            elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
+                                .padding(vertical = 8.dp)
+                                .fillMaxWidth(), horizontalArrangement = Arrangement.SpaceAround
                         ) {
-                            Row(
-                                modifier = Modifier
-                                    .padding(vertical = 8.dp)
-                                    .fillMaxWidth(), horizontalArrangement = Arrangement.SpaceAround
-                            ) {
-                                if (service!!.status == "Confirmado") {
-                                    CustomButton(
-                                        "Call",
-                                        onClick = { openDialer(context, customer!!.phone) })
-                                }
-
+                            if (service!!.status == "Confirmado") {
                                 CustomButton(
-                                    "Location",
-                                    onClick = { openGoogleMaps(context, customer!!.address) })
+                                    "Call", isDarkTheme,
+                                    onClick = { openDialer(context, customer!!.phone) })
                             }
-                            Row(
-                                modifier = Modifier
-                                    .padding(vertical = 8.dp)
-                                    .padding(start = 8.dp)
-                                    .fillMaxWidth(), horizontalArrangement = Arrangement.SpaceAround
-                            ) {
-                                if (service!!.status == "Confirmado") {
-                                    Text("Llamar")
-                                }
-                                Text("Ubicación")
-                            }
+                            CustomButton(
+                                "Location", isDarkTheme,
+                                onClick = { openGoogleMaps(context, customer!!.address) })
                         }
                         Spacer(modifier = Modifier.height(15.dp))
 
