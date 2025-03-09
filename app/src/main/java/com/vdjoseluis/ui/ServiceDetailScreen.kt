@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -17,6 +18,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.AddCircle
+import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.material.icons.filled.Done
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.BottomAppBar
@@ -25,12 +30,13 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DrawerValue
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalDrawerSheet
+import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -49,11 +55,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.google.firebase.firestore.FirebaseFirestore
 import com.vdjoseluis.R
 import com.vdjoseluis.data.models.Customer
@@ -86,7 +94,6 @@ fun ServiceDetailScreen(
     var customer by remember { mutableStateOf<Customer?>(null) }
     var isLoading by remember { mutableStateOf(true) }
 
-    var showMenu by remember { mutableStateOf(false) }
     var showEndServiceDialog by remember { mutableStateOf(false) }
     var showConfirmDialog by remember { mutableStateOf(false) }
     var showIncidentDialog by remember { mutableStateOf(false) }
@@ -101,8 +108,9 @@ fun ServiceDetailScreen(
     var incidentDescription by remember { mutableStateOf("") }
     var endServiceComments by remember { mutableStateOf("") }
 
-    var drawerState = rememberDrawerState(DrawerValue.Closed)
+    val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
+    var selectedItem by remember { mutableStateOf("") }
 
     LaunchedEffect(serviceId) {
         try {
@@ -126,188 +134,180 @@ fun ServiceDetailScreen(
         }
     }
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("Detalles del Servicio") },
-                navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Volver")
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primaryContainer,
-                    titleContentColor = Color.White,
-                    navigationIconContentColor = Color.White,
-                    actionIconContentColor = Color.White
-                ),
-                actions = {
-                    IconButton(onClick = { /*showMenu = true*/ scope.launch { drawerState.open() } }) {
-                        Icon(Icons.Default.MoreVert, contentDescription = "Opciones")
-                    }
-                    if (service != null) {
-                        DropdownMenu(
-                            tonalElevation = 8.dp,
-                            expanded = showMenu,
-                            onDismissRequest = { showMenu = false }) {
-                            when (service!!.status) {
-                                "Confirmado" -> {
-                                    DropdownMenuItem(
-                                        text = { Text("Finalizar Servicio") },
-                                        onClick = {
-                                            actionToConfirm = "finalizado"
-                                            showEndServiceDialog = true
-                                            showMenu = false
-                                        }
-                                    )
-                                    DropdownMenuItem(
-                                        text = { Text("Abrir Incidencia") },
-                                        onClick = {
-                                            actionToConfirm = "incidencia"
-                                            showIncidentDialog = true
-                                            showMenu = false
-                                        }
-                                    )
-                                    DropdownMenuItem(
-                                        text = { Text("Añadir imágenes") },
-                                        onClick = {
-                                            showUploadDialog = true
-                                            showMenu = false
-                                        }
-                                    )
-                                }
+    ModalNavigationDrawer(
+        drawerState = drawerState,
+        drawerContent = {
+            ModalDrawerSheet(
+                modifier = Modifier.fillMaxHeight(0.25f),
+                drawerContainerColor = if (isDarkTheme) Color.LightGray else MaterialTheme.colorScheme.background,
+                drawerContentColor = Color.Black
+            ) {
+                if (service != null) {
+                    DrawerContent(service!!.status, onSelect = { item ->
+                        selectedItem = item
+                        scope.launch { drawerState.close() }
+                        when (selectedItem) {
+                            "Finalizar Servicio" -> {
+                                actionToConfirm = "finalizado"
+                                showEndServiceDialog = true
+                            }
 
-                                "Pendiente" -> {
-                                    DropdownMenuItem(
-                                        text = { Text("Confirmar Servicio") },
-                                        onClick = {
-                                            actionToConfirm = "confirmar"
-                                            showConfirmDialog = true
-                                            showMenu = false
-                                        }
-                                    )
-                                    DropdownMenuItem(
-                                        text = { Text("Proponer Nueva Fecha") },
-                                        onClick = {
-                                            showMenu = false
-                                            showDateTimePickerDialog = true
-                                        }
-                                    )
-                                }
+                            "Reportar Incidencia" -> {
+                                actionToConfirm = "incidencia"
+                                showIncidentDialog = true
+                            }
+
+                            "Añadir Imágenes" -> {
+                                showUploadDialog = true
+                            }
+
+                            "Confirmar Cita Servicio" -> {
+                                actionToConfirm = "confirmar"
+                                showConfirmDialog = true
+                            }
+
+                            "Proponer Nueva Fecha/Hora" -> {
+                                showDateTimePickerDialog = true
                             }
                         }
-                    }
+
+                    })
                 }
-            )
-        },
-        bottomBar = {
-            BottomAppBar(
-                modifier = Modifier.height(40.dp),
-                containerColor = MaterialTheme.colorScheme.primaryContainer,
-                contentColor = Color.White
-            ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
+            }
+
+        }
+    ) {
+        Scaffold(
+            topBar = {
+                TopAppBar(
+                    title = { Text("Detalles del Servicio") },
+                    navigationIcon = {
+                        IconButton(onClick = onBack) {
+                            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Volver")
+                        }
+                    },
+                    colors = TopAppBarDefaults.topAppBarColors(
+                        containerColor = MaterialTheme.colorScheme.primaryContainer,
+                        titleContentColor = Color.White,
+                        navigationIconContentColor = Color.White,
+                        actionIconContentColor = Color.White
+                    ),
+                    actions = {
+                        IconButton(onClick = { scope.launch { drawerState.open() } }) {
+                            Icon(Icons.Default.MoreVert, contentDescription = "Opciones")
+                        }
+                    }
+                )
+            },
+            bottomBar = {
+                BottomAppBar(
+                    modifier = Modifier.height(40.dp),
+                    containerColor = MaterialTheme.colorScheme.primaryContainer,
+                    contentColor = Color.White
                 ) {
-                    Text(
-                        text = "Copyright ® 2025 - VD LOGISTICS",
-                        modifier = Modifier.padding(start = 16.dp)
-                    )
-                    IconButton(onClick = { toggleTheme() }) {
-                        Icon(
-                            painter = painterResource(if (isDarkTheme) R.drawable.light_mode else R.drawable.dark_mode),
-                            modifier = Modifier.size(30.dp),
-                            contentDescription = "Cambiar modo claro/oscuro"
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = "Copyright ® 2025 - VD LOGISTICS",
+                            modifier = Modifier.padding(start = 16.dp)
                         )
+                        IconButton(onClick = { toggleTheme() }) {
+                            Icon(
+                                painter = painterResource(if (isDarkTheme) R.drawable.light_mode else R.drawable.dark_mode),
+                                modifier = Modifier.size(30.dp),
+                                contentDescription = "Cambiar modo claro/oscuro"
+                            )
+                        }
                     }
                 }
             }
-        }
-    ) { innerPadding ->
-        Surface(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding),
-            color = MaterialTheme.colorScheme.background
-        ) {
-            Box(
-                modifier = Modifier.fillMaxSize()
+        ) { innerPadding ->
+            Surface(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(innerPadding),
+                color = MaterialTheme.colorScheme.background
             ) {
-                Image(
-                    painter = painterResource(id = R.drawable.logo),
-                    contentDescription = "Logo",
-                    modifier = Modifier
-                        .alpha(if (isDarkTheme) 0.03f else 0.07f)
-                        .fillMaxSize()
-                )
-                if (isLoading) {
-                    CircularProgressIndicator()
-                } else if (service != null && customer != null) {
-                    Column(modifier = Modifier.padding(vertical = 16.dp)) {
-                        val formattedDate: String = formatDate(service!!.date.toDate())
-                        val formattedTime: String = formatTime(service!!.date.toDate())
-                        RowData("Fecha: ", "$formattedDate - $formattedTime")
-                        RowData("Tipo: ", service!!.type)
-                        RowData("Estado: ", service!!.status)
-                        RowData("Descripción: ", service!!.description)
+                Box(
+                    modifier = Modifier.fillMaxSize()
+                ) {
+                    Image(
+                        painter = painterResource(id = R.drawable.logo),
+                        contentDescription = "Logo",
+                        modifier = Modifier
+                            .alpha(if (isDarkTheme) 0.03f else 0.07f)
+                            .fillMaxSize()
+                    )
+                    if (isLoading) {
+                        CircularProgressIndicator()
+                    } else if (service != null && customer != null) {
+                        Column(modifier = Modifier.padding(vertical = 16.dp)) {
+                            val formattedDate: String = formatDate(service!!.date.toDate())
+                            val formattedTime: String = formatTime(service!!.date.toDate())
+                            RowData("Fecha: ", "$formattedDate - $formattedTime")
+                            RowData("Tipo: ", service!!.type)
+                            RowData("Estado: ", service!!.status)
+                            RowData("Descripción: ", service!!.description)
 
-                        Spacer(modifier = Modifier.height(16.dp))
-                        Surface(
-                            color = MaterialTheme.colorScheme.tertiary,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                        ) {
+                            Spacer(modifier = Modifier.height(16.dp))
+                            Surface(
+                                color = MaterialTheme.colorScheme.tertiary,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                            ) {
 
-                            Text(
-                                text = "Datos del cliente",
-                                style = MaterialTheme.typography.titleMedium,
-                                fontWeight = FontWeight.Bold,
-                                textAlign = TextAlign.Center,
-                                modifier = Modifier.padding(vertical = 8.dp),
-                                color = Color.White
-                            )
-                        }
-                        Spacer(modifier = Modifier.height(6.dp))
-                        RowData("Nombre: ", customer!!.name)
-                        RowData("Teléfono: ", customer!!.phone)
-                        RowData("Dirección: ", customer!!.address)
-                        RowData("Adicional: ", customer!!.addressAdditional)
-                        Spacer(modifier = Modifier.height(15.dp))
-
-                        Row(
-                            modifier = Modifier
-                                .padding(vertical = 8.dp)
-                                .fillMaxWidth(), horizontalArrangement = Arrangement.SpaceAround
-                        ) {
-                            if (service!!.status == "Confirmado") {
-                                CustomButton(
-                                    "Call", isDarkTheme,
-                                    onClick = { openDialer(context, customer!!.phone) })
+                                Text(
+                                    text = "Datos del cliente",
+                                    style = MaterialTheme.typography.titleMedium,
+                                    fontWeight = FontWeight.Bold,
+                                    textAlign = TextAlign.Center,
+                                    modifier = Modifier.padding(vertical = 8.dp),
+                                    color = Color.White
+                                )
                             }
-                            CustomButton(
-                                "Location", isDarkTheme,
-                                onClick = { openGoogleMaps(context, customer!!.address) })
+                            Spacer(modifier = Modifier.height(6.dp))
+                            RowData("Nombre: ", customer!!.name)
+                            RowData("Teléfono: ", customer!!.phone)
+                            RowData("Dirección: ", customer!!.address)
+                            RowData("Adicional: ", customer!!.addressAdditional)
+                            Spacer(modifier = Modifier.height(15.dp))
+
+                            Row(
+                                modifier = Modifier
+                                    .padding(vertical = 8.dp)
+                                    .fillMaxWidth(), horizontalArrangement = Arrangement.SpaceAround
+                            ) {
+                                if (service!!.status == "Confirmado") {
+                                    CustomButton(
+                                        "Call", isDarkTheme,
+                                        onClick = { openDialer(context, customer!!.phone) })
+                                }
+                                CustomButton(
+                                    "Location", isDarkTheme,
+                                    onClick = { openGoogleMaps(context, customer!!.address) })
+                            }
+                            Spacer(modifier = Modifier.height(15.dp))
+
+                            Card(
+                                modifier = Modifier
+                                    .padding(horizontal = 4.dp)
+                                    .clickable { showServiceCommentsDialog = true }
+                            ) { RowData("Ver comentarios ", "") }
+                            Spacer(modifier = Modifier.height(10.dp))
+                            Card(
+                                modifier = Modifier
+                                    .padding(horizontal = 4.dp)
+                                    .clickable { showViewFilesDialog = true }
+                            ) { RowData("Archivos adjuntos", "") }
                         }
-                        Spacer(modifier = Modifier.height(15.dp))
-
-                        Card(
-                            modifier = Modifier
-                                .padding(horizontal = 4.dp)
-                                .clickable { showServiceCommentsDialog = true }
-                        ) { RowData("Ver comentarios ", "") }
-                        Spacer(modifier = Modifier.height(10.dp))
-                        Card(
-                            modifier = Modifier
-                                .padding(horizontal = 4.dp)
-                                .clickable { showViewFilesDialog = true }
-                        ) { RowData("Archivos adjuntos", "") }
+                    } else {
+                        Text("No se pudo cargar el servicio o cliente.", color = Color.Red)
                     }
-                } else {
-                    Text("No se pudo cargar el servicio o cliente.", color = Color.Red)
-                }
 
+                }
             }
         }
     }
@@ -515,6 +515,40 @@ fun ServiceDetailScreen(
     }
     if (showViewFilesDialog) {
         ViewFilesDialog(serviceId, onDismiss = { showViewFilesDialog = false }, context)
+    }
+}
+
+@Composable
+fun DrawerContent(status: String, onSelect: (String) -> Unit) {
+    val menuItems: List<Pair<ImageVector, String>> = if (status == "Confirmado") {
+        listOf(
+            Pair(Icons.Default.Done, "Finalizar Servicio"),
+            Pair(Icons.Default.Info, "Reportar Incidencia"),
+            Pair(Icons.Default.AddCircle, "Añadir Imágenes")
+        )
+    } else {
+        listOf(
+            Pair(Icons.Default.Done, "Confirmar Cita Servicio"),
+            Pair(Icons.Default.DateRange, "Proponer Nueva Fecha/Hora")
+        )
+    }
+    Column(
+        modifier = Modifier
+            .padding(16.dp)
+    ) {
+        Text(text = "Opciones del Servicio", modifier = Modifier.padding(8.dp), fontSize = 20.sp)
+        HorizontalDivider()
+        menuItems.forEach { (icon, label) ->
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(imageVector = icon, contentDescription = label)
+                Text(text = label, fontSize = 18.sp, modifier = Modifier
+                    .padding(8.dp)
+                    .clickable {
+                        onSelect(label)
+                    })
+            }
+
+        }
     }
 }
 

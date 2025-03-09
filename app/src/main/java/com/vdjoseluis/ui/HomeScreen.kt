@@ -232,7 +232,7 @@ fun ServiceItem(service: Service, onClick: (Service) -> Unit) {
                 Box(
                     modifier = Modifier
                         .size(36.dp)
-                        .background(color = MaterialTheme.colorScheme.tertiary, shape = CircleShape)
+                        .background(color = MaterialTheme.colorScheme.primaryContainer, shape = CircleShape)
                 ) {
                     val iconResource = when (service.type) {
                         "Transporte" -> {
@@ -244,7 +244,7 @@ fun ServiceItem(service: Service, onClick: (Service) -> Unit) {
                         }
 
                         else -> {
-                            R.drawable.construction //TODO: Icono para otros casos
+                            R.drawable.square
                         }
                     }
                     Image(
