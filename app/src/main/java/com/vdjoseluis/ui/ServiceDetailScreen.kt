@@ -549,7 +549,7 @@ fun DrawerContent(status: String, onSelect: (String) -> Unit) {
         modifier = Modifier
             .padding(16.dp)
     ) {
-        Text(text = "Opciones del Servicio", modifier = Modifier.padding(8.dp), fontSize = 20.sp)
+        Text(text = "Opciones del Servicio", modifier = Modifier.padding(8.dp), fontSize = 22.sp, fontWeight = FontWeight.Bold)
         HorizontalDivider()
         menuItems.forEach { (icon, label) ->
             Row(verticalAlignment = Alignment.CenterVertically) {

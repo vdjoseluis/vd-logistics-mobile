@@ -11,7 +11,6 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.vdjoseluis.SplashScreen
 import com.vdjoseluis.auth.LoginScreen
-import com.vdjoseluis.auth.RegisterScreen
 import com.vdjoseluis.data.models.UserViewModel
 import com.vdjoseluis.ui.HomeScreen
 import com.vdjoseluis.ui.ServiceDetailScreen
@@ -54,12 +53,6 @@ fun AppNavigation(
                 toggleTheme = toggleTheme,
                 isDarkTheme = isDarkTheme
             )
-        }
-
-        composable("register") {
-            RegisterScreen(onRegisterSuccess = {
-                navController.navigate("home")
-            })
         }
 
         composable("home") {
