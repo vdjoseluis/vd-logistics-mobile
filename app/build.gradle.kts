@@ -60,6 +60,9 @@ dependencies {
     implementation(libs.firebase.storage.ktx)
     implementation(libs.coil.compose)
 
+    implementation(libs.firebase.messaging.ktx)
+    implementation(libs.play.services.auth)
+
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
