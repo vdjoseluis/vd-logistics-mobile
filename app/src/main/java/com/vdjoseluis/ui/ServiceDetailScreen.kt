@@ -3,6 +3,7 @@ package com.vdjoseluis.ui
 import android.app.DatePickerDialog
 import android.app.TimePickerDialog
 import android.util.Log
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -23,6 +24,7 @@ import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Done
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.Button
@@ -151,12 +153,13 @@ fun ServiceDetailScreen(
         drawerState = drawerState,
         drawerContent = {
             ModalDrawerSheet(
-                modifier = Modifier.fillMaxHeight(0.25f),
+                modifier = Modifier.fillMaxHeight(0.3f),
                 drawerContainerColor = if (isDarkTheme) Color.LightGray else MaterialTheme.colorScheme.background,
                 drawerContentColor = Color.Black
             ) {
                 if (service != null) {
-                    DrawerContent(service!!.status, onSelect = { item ->
+                    val isAssembling: Boolean = service!!.type == "Montaje"
+                    DrawerContent(service!!.status, isAssembling, onSelect = { item ->
                         selectedItem = item
                         scope.launch { drawerState.close() }
                         when (selectedItem) {
@@ -168,6 +171,11 @@ fun ServiceDetailScreen(
                             "Reportar Incidencia" -> {
                                 actionToConfirm = "incidencia"
                                 showIncidentDialog = true
+                            }
+
+                            "Finalización Pendiente" -> {
+                                actionToConfirm = "finalizacion pendiente"
+                                showEndServiceDialog = true
                             }
 
                             "Añadir Imágenes" -> {
@@ -361,12 +369,21 @@ fun ServiceDetailScreen(
     }
 
     if (showEndServiceDialog) {
+        var preTitle: String = "Finalizar"
+        var bodyMsg: String = "Puedes"
+        var commentRequired: Boolean = false
+        if (actionToConfirm == "finalizacion pendiente") {
+            preTitle = "Finalización Pendiente de"
+            bodyMsg = "Debes"
+            commentRequired = true
+        }
+
         AlertDialog(
             onDismissRequest = { showEndServiceDialog = false },
-            title = { Text("Finalizar servicio") },
+            title = { Text("$preTitle servicio") },
             text = {
                 Column {
-                    Text("Puedes escribir algún comentario:")
+                    Text("$bodyMsg escribir algún comentario:")
                     TextField(
                         value = endServiceComments,
                         onValueChange = { endServiceComments = it },
@@ -377,8 +394,12 @@ fun ServiceDetailScreen(
             confirmButton = {
                 Button(
                     onClick = {
-                        showEndServiceDialog = false
-                        showConfirmDialog = true
+                        if (commentRequired && (endServiceComments=="")) {
+                            Toast.makeText(context, "Escribe comentario", Toast.LENGTH_SHORT).show()
+                        } else {
+                            showEndServiceDialog = false
+                            showConfirmDialog = true
+                        }
                     },
                     colors = ButtonDefaults.buttonColors(
                         containerColor = MaterialTheme.colorScheme.primaryContainer,
@@ -409,7 +430,8 @@ fun ServiceDetailScreen(
             text = {
                 Text(
                     when (actionToConfirm) {
-                        "finalizado" -> "¿Está seguro de marcar el servicio como finalizado?"
+                        "finalizado" -> "¿Está seguro de finalizar el servicio?"
+                        "finalizacion pendiente" -> "¿Está seguro que queda pendiente de finalización?"
                         "confirmar" -> "¿Está seguro de confirmar el servicio?"
                         "propuesta" -> "¿Está seguro de proponer nueva fecha?"
                         else -> ""
@@ -421,6 +443,7 @@ fun ServiceDetailScreen(
                     onClick = {
                         when (actionToConfirm) {
                             "finalizado" -> onUpdateStatus("Finalizado", null, endServiceComments)
+                            "finalizacion pendiente" -> onUpdateStatus("Pendiente Finalización", null, endServiceComments)
                             "confirmar" -> onUpdateStatus("Confirmado", null, null)
                             "propuesta" -> {
                                 onUpdateStatus("Propuesta nueva fecha", proposedDate, null)
@@ -532,19 +555,21 @@ fun ServiceDetailScreen(
 }
 
 @Composable
-fun DrawerContent(status: String, onSelect: (String) -> Unit) {
-    val menuItems: List<Pair<ImageVector, String>> = if (status == "Confirmado") {
-        listOf(
+fun DrawerContent(status: String, isAssembling: Boolean, onSelect: (String) -> Unit) {
+    val menuItems: MutableList<Pair<ImageVector, String>> = if (status == "Confirmado") {
+        mutableListOf(
             Pair(Icons.Default.Done, "Finalizar Servicio"),
-            Pair(Icons.Default.Info, "Reportar Incidencia"),
+            Pair(Icons.Default.Warning, "Reportar Incidencia"),
+            Pair(Icons.Default.Info, "Finalización Pendiente"),
             Pair(Icons.Default.AddCircle, "Añadir Imágenes")
         )
     } else {
-        listOf(
+        mutableListOf(
             Pair(Icons.Default.Done, "Confirmar Cita Servicio"),
             Pair(Icons.Default.DateRange, "Proponer Nueva Fecha/Hora")
         )
     }
+    if (menuItems.size>3 && !isAssembling) menuItems.removeAt(2)
     Column(
         modifier = Modifier
             .padding(16.dp)

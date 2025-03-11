@@ -243,6 +243,10 @@ fun ServiceItem(service: Service, onClick: (Service) -> Unit) {
                             R.drawable.construction
                         }
 
+                        "Finalización" -> {
+                            R.drawable.completion
+                        }
+
                         else -> {
                             R.drawable.square
                         }

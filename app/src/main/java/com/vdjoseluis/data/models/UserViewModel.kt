@@ -125,6 +125,7 @@ class UserViewModel : ViewModel() {
                     action = "Propone nueva fecha"
                 }
                 if (newStatus=="Confirmado") action = "Confirma cita servicio"
+                if (newStatus=="Pendiente Finalización") action = "Pendiente Finalización"
 
                 endServiceComments?.let {
                     updates["comments"] = it
