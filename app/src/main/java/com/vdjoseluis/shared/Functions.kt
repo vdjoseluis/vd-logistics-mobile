@@ -25,7 +25,7 @@ fun formatTime(time: Date): String {
 fun uploadImageToFirebaseStorage(context: Context, serviceId: String, fileUri: Uri) {
     val extension = "png"
     val storageRef = FirebaseStorage.getInstance().reference
-        .child("services/$serviceId/${UUID.randomUUID()}.$extension")
+        .child("services/$serviceId/byOperator/${UUID.randomUUID()}.$extension")
 
     storageRef.putFile(fileUri)
         .addOnSuccessListener {
@@ -35,8 +35,9 @@ fun uploadImageToFirebaseStorage(context: Context, serviceId: String, fileUri: U
             Toast.makeText(context, "Error al subir imagen", Toast.LENGTH_SHORT).show()
         }
 }
-fun fetchFilesFromFirebaseStorage(serviceId: String, onResult: (List<Pair<String, String>>) -> Unit) {
-    val storageRef = Firebase.storage.reference.child("services/$serviceId")
+fun fetchFilesFromFirebaseStorage(folderPath: String, onResult: (List<Pair<String, String>>) -> Unit) {
+    //val storageRef = Firebase.storage.reference.child("services/$serviceId")
+    val storageRef = Firebase.storage.reference.child(folderPath)
 
     storageRef.listAll()
         .addOnSuccessListener { listResult ->

@@ -34,12 +34,12 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 
 @Composable
-fun ViewFilesDialog(serviceId: String, onDismiss: () -> Unit, context: Context) {
+fun ViewFilesDialog(folderPath: String, onDismiss: () -> Unit, context: Context) {
     var fileList by remember { mutableStateOf<List<Pair<String, String>>>(emptyList()) }
     var isLoading by remember { mutableStateOf(true) }
 
-    LaunchedEffect(serviceId) {
-        fetchFilesFromFirebaseStorage(serviceId) { files ->
+    LaunchedEffect(folderPath) {
+        fetchFilesFromFirebaseStorage(folderPath) { files ->
             fileList = files
             isLoading = false
         }

@@ -100,7 +100,8 @@ fun ServiceDetailScreen(
     var showIncidentDialog by remember { mutableStateOf(false) }
     var showServiceCommentsDialog by remember { mutableStateOf(false) }
     var showUploadDialog by remember { mutableStateOf(false) }
-    var showViewFilesDialog by remember { mutableStateOf(false) }
+    var showViewResourcesDialog by remember { mutableStateOf(false) }
+    var showViewMyFilesDialog by remember { mutableStateOf(false) }
 
     var showDateTimePickerDialog by remember { mutableStateOf(false) }
     var proposedDate by remember { mutableStateOf<Date?>(null) }
@@ -321,8 +322,14 @@ fun ServiceDetailScreen(
                             Card(
                                 modifier = Modifier
                                     .padding(horizontal = 4.dp)
-                                    .clickable { showViewFilesDialog = true }
+                                    .clickable { showViewResourcesDialog = true }
                             ) { RowData("Archivos adjuntos", "") }
+                            Spacer(modifier = Modifier.height(10.dp))
+                            Card(
+                                modifier = Modifier
+                                    .padding(horizontal = 4.dp)
+                                    .clickable { showViewMyFilesDialog = true }
+                            ) { RowData("Mis archivos añadidos", "") }
                         }
                     } else {
                         Text("No se pudo cargar el servicio o cliente.", color = Color.Red)
@@ -549,8 +556,14 @@ fun ServiceDetailScreen(
     if (showUploadDialog) {
         UploadImageDialog(serviceId, onDismiss = { showUploadDialog = false })
     }
-    if (showViewFilesDialog) {
-        ViewFilesDialog(serviceId, onDismiss = { showViewFilesDialog = false }, context)
+    if (showViewResourcesDialog) {
+        val folderPath = "services/$serviceId/resources"
+        ViewFilesDialog(folderPath, onDismiss = { showViewResourcesDialog = false }, context)
+    }
+
+    if (showViewMyFilesDialog) {
+        val folderPath = "services/$serviceId/byOperator"
+        ViewFilesDialog(folderPath, onDismiss = { showViewMyFilesDialog = false }, context)
     }
 }
 

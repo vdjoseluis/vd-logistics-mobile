@@ -97,8 +97,9 @@ class UserViewModel : ViewModel() {
                                 val firstName = customerSnapshot?.getString("firstName") ?: ""
                                 val lastName = customerSnapshot?.getString("lastName") ?: ""
                                 val fullName = "$firstName $lastName".trim()
+                                val city = customerSnapshot?.getString("city") ?: ""
 
-                                it.copy(customerName = fullName.ifBlank { "Desconocido" })
+                                it.copy(customerName = fullName.ifBlank { "Desconocido" }, city = city.ifBlank { "" })
                             }
                         }
 
@@ -159,7 +160,8 @@ class UserViewModel : ViewModel() {
                         FirebaseFirestore.getInstance().document("users/$uid")
                     },
                     "description" to description,
-                    "date" to Timestamp.now()
+                    "date" to Timestamp.now(),
+                    "status" to "Pendiente"
                 )
                 val log = incident.toMutableMap().apply {
                     remove("description")

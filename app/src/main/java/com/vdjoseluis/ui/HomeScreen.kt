@@ -232,7 +232,10 @@ fun ServiceItem(service: Service, onClick: (Service) -> Unit) {
                 Box(
                     modifier = Modifier
                         .size(36.dp)
-                        .background(color = MaterialTheme.colorScheme.primaryContainer, shape = CircleShape)
+                        .background(
+                            color = MaterialTheme.colorScheme.primaryContainer,
+                            shape = CircleShape
+                        )
                 ) {
                     val iconResource = when (service.type) {
                         "Transporte" -> {
@@ -271,9 +274,11 @@ fun ServiceItem(service: Service, onClick: (Service) -> Unit) {
             val formattedDate: String = formatDate(service.date.toDate())
             val formattedTime: String = formatTime(service.date.toDate())
             Row {
-                Text("Fecha: $formattedDate", style = MaterialTheme.typography.bodyLarge)
-                Spacer(modifier = Modifier.width(25.dp))
+                Text(formattedDate, style = MaterialTheme.typography.bodyLarge)
+                Spacer(modifier = Modifier.width(15.dp))
                 Text("Hora: $formattedTime", style = MaterialTheme.typography.bodyLarge)
+                Spacer(modifier = Modifier.width(15.dp))
+                Text(service.city, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Bold)
             }
         }
     }

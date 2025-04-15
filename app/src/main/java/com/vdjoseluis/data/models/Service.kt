@@ -13,6 +13,6 @@ data class Service(
     val status: String = "",
     val type: String = "",
     val comments: String? = "No hay comentarios",
-
-    var customerName: String = ""
+    var customerName: String = "",
+    val city: String = ""
 )
