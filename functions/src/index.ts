@@ -2,6 +2,7 @@ import * as admin from "firebase-admin";
 import {onDocumentCreated, onDocumentDeleted, onDocumentUpdated}
   from "firebase-functions/v2/firestore";
 import {logger} from "firebase-functions";
+import {onCall, HttpsError} from "firebase-functions/v2/https";
 
 admin.initializeApp();
 
@@ -86,7 +87,7 @@ export const onServiceUpdated = onDocumentUpdated("services/{serviceId}",
 
     if (fcmToken) {
       const preNofification: string =
-      (afterData.status==="Cancelado") ? "Cancelado" : "Actualizado";
+        (afterData.status === "Cancelado") ? "Cancelado" : "Actualizado";
       await sendNotification(
         fcmToken,
         "VD Logistics",
@@ -117,3 +118,71 @@ export const onServiceDeleted = onDocumentDeleted("services/{serviceId}",
       );
     }
   });
+
+export const createUser = onCall(async (request) => {
+  // ✅ Validar autenticación
+  if (!request.auth) {
+    throw new HttpsError("unauthenticated", "No estás autenticado.");
+  }
+
+  // ✅ Validar permisos de administrador
+  if (!request.auth.token || request.auth.token.admin !== true) {
+    throw new HttpsError(
+      "permission-denied", "No tienes permisos para crear usuarios.");
+  }
+
+  // ✅ Validar datos del usuario
+  const {email, password, displayName, phoneNumber} = request.data;
+  if (!email || !password || password.length < 6) {
+    throw new HttpsError("invalid-argument", "Email o contraseña inválidos.");
+  }
+
+  try {
+    // ✅ Verificar si el usuario ya existe en Authentication
+    const existingUser = await admin.auth().getUserByEmail(email)
+      .then(() => true).catch(() => false);
+    if (existingUser) {
+      throw new HttpsError("already-exists", "El usuario ya existe.");
+    }
+
+    // ✅ Crear usuario en Firebase Authentication
+    const user = await admin.auth().createUser({
+      email,
+      password,
+      displayName,
+      phoneNumber,
+    });
+
+    return {uid: user.uid};
+  } catch (err: any) {
+    throw new HttpsError("internal", err.message);
+  }
+});
+
+export const deleteUser = onCall(async (request) => {
+  // ✅ Validar autenticación
+  if (!request.auth) {
+    throw new HttpsError("unauthenticated", "No estás autenticado.");
+  }
+
+  // ✅ Validar permisos de administrador
+  if (!request.auth.token || request.auth.token.admin !== true) {
+    throw new HttpsError(
+      "permission-denied", "No tienes permisos para eliminar usuarios.");
+  }
+
+  // ✅ Validar UID del usuario a eliminar
+  const {uid} = request.data;
+  if (!uid) {
+    throw new HttpsError("invalid-argument", "UID no proporcionado.");
+  }
+
+  try {
+    // ✅ Eliminar usuario de Firebase Authentication
+    await admin.auth().deleteUser(uid);
+    return {success: true};
+  } catch (err: any) {
+    throw new HttpsError("internal", err.message);
+  }
+});
+
